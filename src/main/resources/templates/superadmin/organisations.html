@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Organisations</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #27ae60;      /* Vert principal */
+            --primary-dark: #219653; /* Vert plus foncé pour les éléments actifs */
+            --secondary: #2c3e50;    /* Bleu foncé pour le contraste */
+            --success: #2ecc71;      /* Vert plus lumineux */
+            --danger: #e74c3c;       /* Rouge plus lumineux */
+            --light: #ecf0f1;        /* Gris très clair */
+            --dark: #34495e;         /* Bleu-gris foncé */
+            --white: #ffffff;
+            --border: #bdc3c7;       /* Gris plus visible */
+            --title: #2ecc71;        /* Couleur des titres */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: var(--primary);
+            color: var(--white);
+            padding: 20px 0;
+            position: fixed;
+            height: 100%;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 15px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.5rem;
+            font-weight: 500;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar-menu a {
+            display: block;
+            padding: 12px 20px;
+            color: var(--white);
+            text-decoration: none;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
+            background-color: var(--primary-dark);
+            border-left: 3px solid var(--light);
+        }
+
+        .sidebar-menu i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background-color: var(--white);
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--title);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-info .user-name {
+            font-weight: 500;
+        }
+
+        .content-card {
+            background-color: var(--white);
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .logo-img {
+            max-height: 50px;
+            max-width: 100px;
+        }
+
+        .table-container {
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background-color: var(--light);
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            font-weight: 500;
+            color: var(--secondary);
+        }
+
+        tbody tr:hover {
+            background-color: rgba(39, 174, 96, 0.1);
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-success, .btn-validate {
+            background-color: var(--success);
+            color: var(--white);
+        }
+
+        .btn-danger, .btn-delete {
+            background-color: var(--danger);
+            color: var(--white);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--white);
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .action-buttons .btn {
+            margin-bottom: 5px;
+        }
+
+        .badge {
+            font-weight: 500;
+        }
+
+        .description-cell {
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 991px) {
+            .sidebar {
+                width: 80px;
+                text-align: center;
+            }
+
+            .sidebar-header h2 {
+                display: none;
+            }
+
+            .sidebar-menu span {
+                display: none;
+            }
+
+            .sidebar-menu i {
+                margin-right: 0;
+                font-size: 1.2rem;
+            }
+
+            .main-content {
+                margin-left: 80px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 10px;
+            }
+
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard-container">
+    <!-- Sidebar from dashboard.html -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>Super Admin</h2>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a th:href="@{/superadmin/dashboard}"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+            <li><a th:href="@{/superadmin/organisations}" class="active"><i class="fas fa-building"></i> Gestion des Organisations</a></li>
+            <li><a th:href="@{/superadmin/charities}"><i class="fas fa-hand-holding-heart"></i> Gestion des Charités</a></li>
+        </ul>
+    </div>
+    
+    <!-- Main content with header -->
+    <div class="main-content">
+        <div class="header">
+            <h1>Gestion des Organisations</h1>
+            <div class="user-info">
+                <i class="fas fa-user-circle"></i>
+                <span class="user-name">Admin</span>
+            </div>
+        </div>
+        
+        <!-- Organizations card -->
+        <div class="content-card">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <button class="btn btn-primary">
+                    <i class="fas fa-plus-circle me-2"></i>Ajouter une organisation
+                </button>
+                <div class="input-group" style="max-width: 300px;">
+                    <input type="text" class="form-control" placeholder="Rechercher..." id="searchInput">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                </div>
+            </div>
+
+            <!-- Empty state -->
+            <div th:if="${organisations == null || organisations.isEmpty()}" class="empty-state">
+                <i class="fas fa-folder-open"></i>
+                <p>Aucune organisation n'a été trouvée.</p>
+            </div>
+
+            <!-- Table with organizations -->
+            <div th:if="${organisations != null && !organisations.isEmpty()}" class="table-responsive table-container">
+                <table class="table table-striped table-hover align-middle mb-0" id="organizationsTable">
+                    <thead>
+                        <tr>
+                            <th>Logo</th>
+                            <th>Nom</th>
+                            <th>ID</th>
+                            <th>Adresse</th>
+                            <th>Description</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="org : ${organisations}">
+                            <td>
+                                <img th:if="${org.logo != null && org.logo != ''}"
+                                     th:src="${'data:image/png;base64,' + org.logo}"
+                                     class="logo-img rounded" alt="Logo"/>
+                                <span th:if="${org.logo == null || org.logo == ''}">
+                                    <i class="fas fa-building"></i>
+                                </span>
+                            </td>
+                            <td>
+                                <span class="fw-bold" th:text="${org.nom}">Organisation Name</span>
+                            </td>
+                            <td th:text="${org.numeroIdentif}">ID123</td>
+                            <td th:text="${org.adresseLegale}">Address</td>
+                            <td class="description-cell" th:text="${org.description}">Description</td>
+                            <td>
+                                <span th:if="${org.valideParAdmin == true}" class="badge bg-success">
+                                    <i class="fas fa-check-circle me-1"></i> Validée
+                                </span>
+                                <span th:if="${org.valideParAdmin == false}" class="badge bg-warning text-dark">
+                                    <i class="fas fa-clock me-1"></i> En attente
+                                </span>
+                            </td>
+                            <td class="actions">
+                                <button th:if="${org.valideParAdmin == false}" class="btn btn-success"
+                                        onclick="validateOrganisation(this.getAttribute('data-id'))"
+                                        th:attr="data-id=${org.numeroIdentif}">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button class="btn btn-danger"
+                                        onclick="deleteOrganisation(this.getAttribute('data-id'))"
+                                        th:attr="data-id=${org.numeroIdentif}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                <button class="btn btn-primary"
+                                        onclick="viewDetails(this.getAttribute('data-id'))"
+                                        th:attr="data-id=${org.numeroIdentif}">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for organization details -->
+<div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="detailsModalLabel">Détails de l'organisation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="organizationDetails">
+                <!-- Details will be populated by JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // Base URL for API requests
+    const API_BASE_URL = '/superadmin/api/organisations/';
+
+    function validateOrganisation(id) {
+        if (!id) return;
+
+        if (confirm('Êtes-vous sûr de vouloir valider cette organisation ?')) {
+            fetch(API_BASE_URL + id + '/validate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Organisation validée avec succès!');
+                        location.reload();
+                    } else {
+                        alert('Erreur lors de la validation de l\'organisation');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Erreur lors de la validation de l\'organisation');
+                });
+        }
+    }
+
+    function deleteOrganisation(id) {
+        if (!id) return;
+
+        if (confirm('Êtes-vous sûr de vouloir supprimer cette organisation ?')) {
+            fetch(API_BASE_URL + id, {
+                method: 'DELETE'
+            })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Organisation supprimée avec succès!');
+                        location.reload();
+                    } else {
+                        alert('Erreur lors de la suppression de l\'organisation');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Erreur lors de la suppression de l\'organisation');
+                });
+        }
+    }
+
+    function viewDetails(id) {
+        if (!id) return;
+
+        // Show loading state
+        document.getElementById('organizationDetails').innerHTML =
+            '<div class="text-center p-4"><i class="fas fa-spinner fa-spin text-primary"></i>' +
+            '<p class="mt-3">Chargement des détails...</p></div>';
+
+        // Show modal first to improve perceived performance
+        const detailsModal = new bootstrap.Modal(document.getElementById('detailsModal'));
+        detailsModal.show();
+
+        // Fetch organization details
+        fetch(API_BASE_URL + id)
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Organisation non trouvée');
+                }
+            })
+            .then(org => {
+                // Safely display details with null checks
+                const nom = org.nom || 'Sans nom';
+                const id = org.numeroIdentif || '';
+                const adresse = org.adresseLegale || 'Non spécifiée';
+                const description = org.description || 'Aucune description';
+                const statut = org.valideParAdmin ? 'Validée' : 'En attente';
+
+                document.getElementById('organizationDetails').innerHTML =
+                    '<div class="row">' +
+                    '<div class="col-md-12">' +
+                    '<h4>' + nom + '</h4>' +
+                    '<p class="text-muted mb-2">ID: ' + id + '</p>' +
+                    '<hr>' +
+                    '<p><strong>Adresse:</strong> ' + adresse + '</p>' +
+                    '<p><strong>Description:</strong> ' + description + '</p>' +
+                    '<p><strong>Statut:</strong> ' + statut + '</p>' +
+                    '</div>' +
+                    '</div>';
+            })
+            .catch(error => {
+                document.getElementById('organizationDetails').innerHTML =
+                    '<div class="alert alert-danger">Erreur: ' + error.message + '</div>';
+            });
+    }
+
+    // Simple search functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('keyup', function() {
+                const searchValue = this.value.toLowerCase();
+                const table = document.getElementById('organizationsTable');
+                if (!table) return;
+
+                const rows = table.getElementsByTagName('tr');
+
+                for (let i = 1; i < rows.length; i++) {
+                    const rowText = rows[i].textContent.toLowerCase();
+                    rows[i].style.display = rowText.includes(searchValue) ? '' : 'none';
+                }
+            });
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,17 +1,25 @@
 package org.example.charityproject1.model;
 
-
 import jakarta.validation.constraints.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
 
 @Document(collection = "dons")
-public class Don{
+public class Don {
 
     @Id
-    private String idDon; // Utilisation de String pour la compatibilité avec MongoDB
+    private String id;
+
+    @DBRef
+    @NotNull(message = "La campagne est obligatoire")
+    private Campagne campagne;
+
+    @NotBlank(message = "Le nom du donateur est obligatoire")
+    @Size(max = 100, message = "Le nom ne doit pas dépasser 100 caractères")
+    private String nomDonateur;
 
     @Positive(message = "Le montant doit être positif")
     private float montant;
@@ -19,19 +27,29 @@ public class Don{
     @NotNull(message = "La date est obligatoire")
     private Date date;
 
-    @NotBlank(message = "L'ID de l'utilisateur est obligatoire")
-    private String utilisateurId;
-
-    @NotBlank(message = "L'ID de l'action est obligatoire")
-    private String actionId;
-
     // Getters et setters
-    public String getIdDon() {
-        return idDon;
+    public String getId() {
+        return id;
     }
 
-    public void setIdDon(String idDon) {
-        this.idDon = idDon;
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public Campagne getCampagne() {
+        return campagne;
+    }
+
+    public void setCampagne(Campagne campagne) {
+        this.campagne = campagne;
+    }
+
+    public String getNomDonateur() {
+        return nomDonateur;
+    }
+
+    public void setNomDonateur(String nomDonateur) {
+        this.nomDonateur = nomDonateur;
     }
 
     public float getMontant() {
@@ -48,26 +66,5 @@ public class Don{
 
     public void setDate(Date date) {
         this.date = date;
-    }
-
-    public String getUtilisateurId() {
-        return utilisateurId;
-    }
-
-    public void setUtilisateurId(String utilisateurId) {
-        this.utilisateurId = utilisateurId;
-    }
-
-    public String getActionId() {
-        return actionId;
-    }
-
-    public void setActionId(String actionId) {
-        this.actionId = actionId;
-    }
-
-    // Méthode pour suivre la progression des dons
-    public void suivreProgression(ActionCharite action) {
-        action.setMontantActuel(action.getMontantActuel() + this.montant);
     }
 }
